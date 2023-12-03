@@ -3,7 +3,12 @@ import queue
 import sys
 import numpy as np
 import sounddevice as sd
-
+import keyboard
+import os
+import time
+last_clap_time = time.time()
+file_path = r"C:\Users\artur\OneDrive\Töölaud\Portfolio\projekt_2\Projekt-2\mingi.pptx"  # Replace with your file path
+os.startfile(file_path)
 def int_or_str(text):
     """Helper function for argument parsing."""
     try:
@@ -46,8 +51,14 @@ CLAP_SAMPLES = int(0.05 * args.samplerate) if args.samplerate else 441  # Adjust
 
 def detect_clap(signal):
     """Detects a clap based on amplitude threshold."""
+    global last_clap_time  # Declare the variable as global to modify it within this function
+
     if max(signal) > CLAP_THRESHOLD:
-        return True
+        current_time = time.time()
+        # Check if enough time has passed since the last clap detection
+        if current_time - last_clap_time > 1.0:  # Adjust the duration (1.0 seconds) as needed
+            last_clap_time = current_time  # Update the last clap time
+            return True
     return False
 
 def audio_callback(indata, frames, time, status):
@@ -71,6 +82,8 @@ try:
                 data = q.get_nowait()
                 if detect_clap(data):
                     print("Clap detected!")  # Print when a clap is detected
+                    keyboard.press_and_release('right')
+                
             except queue.Empty:
                 pass
 except Exception as e:
